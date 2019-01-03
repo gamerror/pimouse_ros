@@ -2,12 +2,12 @@
 #encoding: utf8
 import rospy, actionlib
 from std_msgs.msg import UInt16
-from pimouse_ros.msg import MusicAction, MusicResult, MusicFeedback
+from pimouse_ros.msg import MusicAction, MusicResult, MusicFeedback # 行を追加
 
-def write_freq(hz = 0):
+def write_freq(hz=0):
     bfile = "/dev/rtbuzzer0"
     try:
-        with open(bfile, "w") as f:
+        with open(bfile,"w") as f:
             f.write(str(hz) + "\n")
     except IOError:
         rospy.logerr("can't write to " + bfile)
@@ -37,7 +37,11 @@ def recv_buzzer(data):
 if __name__ == '__main__':
     rospy.init_node('buzzer')
     rospy.Subscriber("buzzer", UInt16, recv_buzzer)
-    music = actionlib.SimpleActionServer('music', MusicAction, exec_music, False)
-    music.start()
-    rospy.on_shutdown(write_freq)
+    music = actionlib.SimpleActionServer('music', MusicAction, exec_music, False) # 追加
+    music.start()                                                                 # 追加
+    rospy.on_shutdown(write_freq)                                                 # 追加
     rospy.spin()
+
+# Copyright 2016 Ryuichi Ueda
+# Released under the BSD License.
+# To make line numbers be identical with the book, this statement is written here. Don't move it to the header.
