@@ -15,14 +15,14 @@ class Motor():
         self.sub_cmd_vel = rospy.Subscriber('cmd_vel', Twist, self.callback_cmd_vel)
         self.srv_on = rospy.Service('motor_on', Trigger, self.callback_on)
         self.srv_off = rospy.Service('motor_off', Trigger, self.callback_off)
-        self.srv_tm = rospy.Service('timed_motion', TimedMotion, self.callback_tm)
+        self.srv_tm = rospy.Service('timed_motion', TimedMotion, self.callback_tm)    #追加
         self.last_time = rospy.Time.now()
         self.using_cmd_vel = False
 
-    def set_power(self, onoff = False):
+    def set_power(self,onoff=False):
         en = "/dev/rtmotoren0"
         try:
-            with open(en, 'w') as f:
+            with open(en,'w') as f:
                 f.write("1\n" if onoff else "0\n")
             self.is_on = onoff
             return True
@@ -31,49 +31,47 @@ class Motor():
 
         return False
 
-    def set_raw_freq(self, left_hz, right_hz):
+    def set_raw_freq(self,left_hz,right_hz):
         if not self.is_on:
             rospy.logerr("not enpowered")
             return
 
         try:
-            with open("/dev/rtmotor_raw_l0", 'w') as lf,\
-                 open("/dev/rtmotor_raw_r0", 'w') as rf:
+            with open("/dev/rtmotor_raw_l0",'w') as lf,\
+                 open("/dev/rtmotor_raw_r0",'w') as rf:
                 lf.write(str(int(round(left_hz))) + "\n")
                 rf.write(str(int(round(right_hz))) + "\n")
         except:
             rospy.logerr("cannot write to rtmotor_raw_*")
 
-    def callback_raw_freq(self, message):
-        self.set_raw_freq(message.left_hz, message.right_hz)
+    def callback_raw_freq(self,message):
+        self.set_raw_freq(message.left_hz,message.right_hz)
 
-    def callback_cmd_vel(self, message):
-        forward_hz = 80.0 * message.linear.x / (9 * math.pi)
-        rot_hz = 400.0 * message.angular.z / math.pi
-        self.set_raw_freq(forward_hz - rot_hz, forward_hz + rot_hz)
+    def callback_cmd_vel(self,message):
+        forward_hz = 80000.0*message.linear.x/(9*math.pi)
+        rot_hz = 400.0*message.angular.z/math.pi
+        self.set_raw_freq(forward_hz-rot_hz, forward_hz+rot_hz)
 
         self.using_cmd_vel = True
         self.last_time = rospy.Time.now()
 
-    def onoff_response(self, onoff):
+    def onoff_response(self,onoff):                                #以下3つのメソッドを追加
         d = TriggerResponse()
         d.success = self.set_power(onoff)
         d.message = "ON" if self.is_on else "OFF"
-        self.set_raw_freq(0, 0)
         return d
 
-    def callback_on(self, message): return self.onoff_response(True)
-    def callback_off(self, message): return self.onoff_response(False)
+    def callback_on(self,message): return self.onoff_response(True)
+    def callback_off(self,message): return self.onoff_response(False)
 
-    def callback_tm(self, message):
+    def callback_tm(self,message):
         if not self.is_on:
             rospy.logerr("not enpowered")
             return False
 
-        self.last_time = rospy.Time.now() + rospy.Duration(message.duration_ms / 1000.0)
         dev = "/dev/rtmotor0"
         try:
-            with open(dev, 'w') as f:
+            with open(dev,'w') as f:
                 f.write("%d %d %d\n" %
                     (message.left_hz,message.right_hz,message.duration_ms))
         except:
@@ -89,6 +87,10 @@ if __name__ == '__main__':
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         if m.using_cmd_vel and rospy.Time.now().to_sec() - m.last_time.to_sec() >= 1.0:
-            m.set_raw_freq(0, 0)
+            m.set_raw_freq(0,0)
             m.using_cmd_vel = False
         rate.sleep()
+
+# Copyright 2016 Ryuichi Ueda
+# Released under the BSD License.
+# To make line numbers be identical with the book, this statement is written here. Don't move it to the header.

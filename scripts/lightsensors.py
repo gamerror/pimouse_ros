@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-#encoding: utf8                 #長くてコメントが増えそうなので入れました
+#encoding: utf8
 import sys, rospy
 from pimouse_ros.msg import LightSensorValues
 
-def get_freq():    #この関数を追加
-    f = rospy.get_param('lightsensors_freq',10)
+def get_freq():
+    f = rospy.get_param('lightsensors_freq', 10)
     try:
         if f <= 0.0:
             raise Exception()
@@ -19,8 +19,8 @@ if __name__ == '__main__':
     rospy.init_node('lightsensors')
     pub = rospy.Publisher('lightsensors', LightSensorValues, queue_size=1)
 
-    freq = get_freq()        #追加
-    rate = rospy.Rate(freq)  #rate = rospy.Rate(10)から書き換え
+    freq = get_freq()
+    rate = rospy.Rate(freq)
     while not rospy.is_shutdown():
         try:
             with open(devfile,'r') as f:
@@ -37,13 +37,9 @@ if __name__ == '__main__':
         except IOError:
             rospy.logerr("cannot write to " + devfile)
 
-        f = get_freq()                 #ここから4行追加
+        f = get_freq()
         if f != freq:
             freq = f
-            rate = rospy.Rate(freq)    #ここまで
+            rate = rospy.Rate(freq)
     
         rate.sleep()
-
-# Copyright 2016 Ryuichi Ueda
-# Released under the BSD License.
-# To make line numbers be identical with the book, this statement is written here. Don't move it to the header.
