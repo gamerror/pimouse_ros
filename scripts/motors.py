@@ -4,7 +4,7 @@ import sys, rospy, math
 from pimouse_ros.msg import MotorFreqs
 from geometry_msgs.msg import Twist
 from std_srvs.srv import Trigger, TriggerResponse
-from pimouse_ros.srv import TimedMotion                                               #追加
+from pimouse_ros.srv import TimedMotion
 
 class Motor():
     def __init__(self):
@@ -75,7 +75,7 @@ class Motor():
         try:
             with open(dev, 'w') as f:
                 f.write("%d %d %d\n" %
-                    (message.left_hz,message.right_hz,message.duration_ms))
+                    (message.left_hz, message.right_hz, message.duration_ms))
         except:
             rospy.logerr("cannot write to " + dev)
             return False
